@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ProjectGuid>{620800C8-8D43-470E-8B79-2B9A6E574897}</ProjectGuid>
+  </PropertyGroup>
+</Project>

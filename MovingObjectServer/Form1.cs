@@ -102,10 +102,8 @@ namespace MovingObjectServer
                 buffer = new byte[1024];
                 clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, newClient);
 
-                // Continue accepting new connections
                 serverSocket.BeginAccept(AcceptCallback, null);
 
-                // Send current position to new client immediately
                 PushDataToClient(newClient, $"{rect.X},{rect.Y}");
             }
             catch (SocketException ex)
@@ -131,16 +129,13 @@ namespace MovingObjectServer
 
                 if (receivedData == 0)
                 {
-                    // Client disconnected gracefully
                     DisconnectClient(client, "Client disconnected gracefully");
                     return;
                 }
 
-                // Process received data if needed (for heartbeat, commands, etc.)
                 string receivedMessage = Encoding.ASCII.GetString(buffer, 0, receivedData);
                 Console.WriteLine($"[{DateTime.Now}] Received from {client.ClientId}: {receivedMessage.Trim()}");
 
-                // Continue receiving from this client
                 client.Socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, client);
             }
             catch (SocketException ex)
@@ -212,7 +207,6 @@ namespace MovingObjectServer
                     PushDataToClient(client, data);
                 }
 
-                // Remove disconnected clients
                 foreach (ClientInfo client in clientsToRemove)
                 {
                     DisconnectClient(client, "Connection lost");
@@ -226,7 +220,6 @@ namespace MovingObjectServer
             try
             {
                 int sentBytes = client.Socket.EndSend(ar);
-                // Data successfully sent
             }
             catch (SocketException ex)
             {
@@ -244,16 +237,13 @@ namespace MovingObjectServer
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            // Update object position
             back();
             rect.X += slide;
-            Invalidate(); // Redraw the form
+            Invalidate(); 
 
-            // Data Push: Actively push position data to all connected clients
             string positionData = $"{rect.X},{rect.Y}";
             PushDataToAllClients(positionData);
 
-            // Update form title with client count
             this.Text = $"Moving Object Server - Clients Connected: {connectedClients.Count}";
         }
 
@@ -271,7 +261,6 @@ namespace MovingObjectServer
             g.DrawRectangle(red, rect);
             g.FillRectangle(fillBlue, rect);
 
-            // Draw server info
             using (Font font = new Font("Arial", 10))
             using (SolidBrush brush = new SolidBrush(Color.Black))
             {
@@ -285,7 +274,6 @@ namespace MovingObjectServer
         {
             serverRunning = false;
 
-            // Disconnect all clients
             lock (connectedClients)
             {
                 foreach (ClientInfo client in connectedClients.ToList())
@@ -299,7 +287,6 @@ namespace MovingObjectServer
                 connectedClients.Clear();
             }
 
-            // Close server socket
             try
             {
                 serverSocket?.Close();

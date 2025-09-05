@@ -29,13 +29,11 @@ namespace MovingObjectClient
         {
             InitializeComponent();
 
-            // Get server IP address (you can modify this to connect to a specific IP)
             GetServerIP();
 
             StartConnect();
 
-            // Disable local timer since we're receiving data from server
-            timer1.Interval = 1000; // Use for connection monitoring
+            timer1.Interval = 1000; 
             timer1.Enabled = true;
 
             this.Text = "Moving Object Client - Connecting...";
@@ -46,12 +44,10 @@ namespace MovingObjectClient
         {
             try
             {
-                // Try to get local IP first (for testing on same machine)
                 var ipHost = Dns.GetHostAddresses(Dns.GetHostName());
                 serverIP = ipHost.First(a => a.AddressFamily == AddressFamily.InterNetwork).ToString();
 
-                // Alternatively, you can set a specific server IP here:
-                // serverIP = "192.168.1.100"; // Replace with actual server IP
+                
 
                 Console.WriteLine($"[{DateTime.Now}] Connecting to server: {serverIP}:{serverPort}");
             }
@@ -103,7 +99,6 @@ namespace MovingObjectClient
                 Console.WriteLine($"[{DateTime.Now}] Client successfully connected to server");
                 this.Invoke((Action)(() => this.Text = $"Moving Object Client - Connected to {serverIP}"));
 
-                // Send initial heartbeat or identification message
                 SendToServer("CLIENT_CONNECTED");
             }
             catch (SocketException ex)
@@ -112,9 +107,8 @@ namespace MovingObjectClient
                 ShowErrorDialog($"Connection failed: {ex.Message}");
                 Console.WriteLine($"[{DateTime.Now}] Connection failed: {ex.Message}");
 
-                // Try to reconnect after a delay
                 Timer reconnectTimer = new Timer();
-                reconnectTimer.Interval = 5000; // 5 seconds
+                reconnectTimer.Interval = 5000; 
                 reconnectTimer.Tick += (s, e) =>
                 {
                     reconnectTimer.Stop();
@@ -144,16 +138,13 @@ namespace MovingObjectClient
                 {
                     lastDataReceived = DateTime.Now;
 
-                    // Process received position data
                     string message = Encoding.ASCII.GetString(buffer, 0, received).Trim();
                     ProcessReceivedData(message);
 
-                    // Continue receiving data (Data Push model)
                     clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, null);
                 }
                 else
                 {
-                    // Server closed connection
                     HandleDisconnection("Server closed connection");
                 }
             }
@@ -178,18 +169,16 @@ namespace MovingObjectClient
             {
                 if (string.IsNullOrWhiteSpace(data)) return;
 
-                // Parse position data: "X,Y"
                 string[] parts = data.Split(',');
                 if (parts.Length >= 2)
                 {
                     if (int.TryParse(parts[0], out int x) && int.TryParse(parts[1], out int y))
                     {
-                        // Update rectangle position using thread-safe invoke
                         this.Invoke((Action)(() =>
                         {
                             rect.X = x;
                             rect.Y = y;
-                            Invalidate(); // Redraw the form
+                            Invalidate(); 
                         }));
 
                         Console.WriteLine($"[{DateTime.Now}] Position updated: ({x}, {y})");
@@ -223,7 +212,6 @@ namespace MovingObjectClient
             try
             {
                 int bytesSent = clientSocket.EndSend(ar);
-                // Data sent successfully
             }
             catch (SocketException ex)
             {
@@ -252,9 +240,8 @@ namespace MovingObjectClient
             }
             catch { }
 
-            // Attempt to reconnect after delay
             Timer reconnectTimer = new Timer();
-            reconnectTimer.Interval = 3000; // 3 seconds
+            reconnectTimer.Interval = 3000; 
             reconnectTimer.Tick += (s, e) =>
             {
                 reconnectTimer.Stop();
@@ -271,24 +258,20 @@ namespace MovingObjectClient
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            // Monitor connection and send periodic heartbeat
             if (isConnected)
             {
-                // Check if we haven't received data for too long
                 TimeSpan timeSinceLastData = DateTime.Now - lastDataReceived;
-                if (timeSinceLastData.TotalSeconds > 10) // 10 seconds timeout
+                if (timeSinceLastData.TotalSeconds > 10) 
                 {
                     Console.WriteLine($"[{DateTime.Now}] No data received for {timeSinceLastData.TotalSeconds} seconds");
                     HandleDisconnection("Data timeout");
                 }
                 else
                 {
-                    // Send heartbeat to server
                     SendToServer("HEARTBEAT");
                 }
             }
 
-            // Update form title with connection status
             this.Invoke((Action)(() =>
             {
                 if (isConnected)
@@ -308,7 +291,6 @@ namespace MovingObjectClient
             g.DrawRectangle(red, rect);
             g.FillRectangle(fillBlue, rect);
 
-            // Draw client status information
             using (Font font = new Font("Arial", 10))
             using (SolidBrush brush = new SolidBrush(isConnected ? Color.Green : Color.Red))
             {
@@ -331,7 +313,7 @@ namespace MovingObjectClient
             try
             {
                 SendToServer("CLIENT_DISCONNECTING");
-                System.Threading.Thread.Sleep(100); // Give time for message to send
+                System.Threading.Thread.Sleep(100); 
             }
             catch { }
 
